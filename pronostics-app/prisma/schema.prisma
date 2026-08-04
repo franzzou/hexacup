@@ -136,6 +136,8 @@ model Match {
   awayTeam   String
   league     String?
   country    String? // pays où se déroule la compétition, pour le filtre d'accueil
+  venue      String? // stade/salle où se joue le match
+  referee    String? // arbitre principal
   matchDate  DateTime
   status     MatchStatus @default(UPCOMING)
   homeScore  Int?
@@ -155,14 +157,17 @@ model Match {
 }
 
 model MatchStats {
-  id         String   @id @default(cuid())
-  matchId    String   @unique
-  homeForm   String? // ex: "WWDLW"
-  awayForm   String?
-  h2hSummary String? // résumé face-à-face
-  analysis   String?  @db.Text // analyse générale du match, rédigée par l'admin
-  rawData    Json? // données brutes API pour flexibilité
-  updatedAt  DateTime @updatedAt
+  id                 String   @id @default(cuid())
+  matchId            String   @unique
+  homeForm           String? // ex: "WWDLW"
+  awayForm           String?
+  h2hSummary         String? // résumé face-à-face
+  analysis           String?  @db.Text // analyse générale du match, rédigée par l'admin
+  homeWinProbability Float? // % de chances de victoire à domicile (0-100)
+  drawProbability    Float? // % de chances de match nul (sports concernés uniquement)
+  awayWinProbability Float? // % de chances de victoire à l'extérieur (0-100)
+  rawData            Json? // données brutes API pour flexibilité
+  updatedAt          DateTime @updatedAt
 
   match Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
 }

@@ -6,6 +6,7 @@ import { auth } from "@/lib/auth";
 import { userHasSportAccess } from "@/lib/access";
 import { prisma } from "@/lib/prisma";
 import { MatchLineups } from "@/components/match-lineups";
+import { WinProbability } from "@/components/win-probability";
 
 const RESULT_LABELS: Record<string, string> = {
   PENDING: "En attente",
@@ -55,7 +56,7 @@ export default async function MatchPage(props: PageProps<"/matchs/[id]">) {
         {match.homeTeam} <span className="text-zinc-400">vs</span> {match.awayTeam}
       </h1>
 
-      <p className="mb-8 text-sm text-zinc-500 dark:text-zinc-400">
+      <p className="mb-1 text-sm text-zinc-500 dark:text-zinc-400">
         {match.status === "LIVE"
           ? `En direct${
               match.homeScore !== null && match.awayScore !== null
@@ -69,6 +70,11 @@ export default async function MatchPage(props: PageProps<"/matchs/[id]">) {
               hour: "2-digit",
               minute: "2-digit",
             })}
+      </p>
+      <p className="mb-8 text-sm text-zinc-500 dark:text-zinc-400">
+        {[match.venue, match.referee && `Arbitre : ${match.referee}`]
+          .filter(Boolean)
+          .join(" · ")}
       </p>
 
       {hasAccess ? (
@@ -96,6 +102,14 @@ export default async function MatchPage(props: PageProps<"/matchs/[id]">) {
               <p className="text-sm text-zinc-600 dark:text-zinc-400">{match.stats.analysis}</p>
             </section>
           )}
+
+          <WinProbability
+            homeTeam={match.homeTeam}
+            awayTeam={match.awayTeam}
+            home={match.stats?.homeWinProbability ?? null}
+            draw={match.stats?.drawProbability ?? null}
+            away={match.stats?.awayWinProbability ?? null}
+          />
 
           <MatchLineups
             lineups={match.lineups}

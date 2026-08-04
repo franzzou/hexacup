@@ -82,6 +82,8 @@ async function main() {
     awayTeam: string;
     league: string;
     country: string;
+    venue?: string;
+    referee?: string;
     matchDate: Date;
     status: "LIVE" | "UPCOMING";
     homeScore?: number;
@@ -90,6 +92,9 @@ async function main() {
     awayForm: string;
     h2hSummary: string;
     analysis: string;
+    homeWinProbability?: number;
+    drawProbability?: number;
+    awayWinProbability?: number;
     recommendation: { title: string; analysis: string; confidence: number };
     lineups?: SeedLineup[];
   };
@@ -102,6 +107,8 @@ async function main() {
       awayTeam: "Marseille",
       league: "Ligue 1",
       country: "France",
+      venue: "Parc des Princes, Paris",
+      referee: "Clément Turpin",
       matchDate: hours(-1),
       status: "LIVE",
       homeScore: 1,
@@ -111,6 +118,9 @@ async function main() {
       h2hSummary: "PSG invaincu sur les 5 dernières confrontations à domicile.",
       analysis:
         "PSG aligne un onze quasi type malgré deux absences en défense centrale, compensées par un repositionnement de son milieu défensif. Marseille joue un pressing haut qui a souffert face aux équipes techniques cette saison, ce qui pourrait ouvrir des espaces dans le dos de sa défense.",
+      homeWinProbability: 58,
+      drawProbability: 24,
+      awayWinProbability: 18,
       recommendation: {
         title: "Plus de 2.5 buts",
         analysis:
@@ -163,6 +173,8 @@ async function main() {
       awayTeam: "Barcelone",
       league: "Liga",
       country: "Espagne",
+      venue: "Santiago Bernabéu, Madrid",
+      referee: "José María Sánchez",
       matchDate: hours(5),
       status: "UPCOMING",
       homeForm: "WWWDW",
@@ -170,6 +182,9 @@ async function main() {
       h2hSummary: "Le dernier Clasico s'est terminé 2-2.",
       analysis:
         "Le Real Madrid privilégie un bloc bas suivi de transitions rapides via ses ailiers, une approche qui a posé des problèmes à Barcelone lors de leurs deux derniers face-à-face. Barcelone devra gérer l'absence de son gardien titulaire, suspendu, avec une doublure qui découvre ce niveau de match.",
+      homeWinProbability: 45,
+      drawProbability: 26,
+      awayWinProbability: 29,
       recommendation: {
         title: "Les deux équipes marquent",
         analysis:
@@ -214,6 +229,8 @@ async function main() {
       awayTeam: "Liverpool",
       league: "Premier League",
       country: "Angleterre",
+      venue: "Etihad Stadium, Manchester",
+      referee: "Michael Oliver",
       matchDate: hours(28),
       status: "UPCOMING",
       homeForm: "WDWWW",
@@ -221,6 +238,9 @@ async function main() {
       h2hSummary: "Liverpool n'a pas gagné à l'Etihad depuis 4 ans.",
       analysis:
         "Manchester City conserve un contrôle du ballon très élevé à domicile, ce qui limite mécaniquement les occasions concédées. Liverpool arrive après un déplacement européen en milieu de semaine et pourrait tourner sur certains postes clés.",
+      homeWinProbability: 50,
+      drawProbability: 24,
+      awayWinProbability: 26,
       recommendation: {
         title: "Victoire Manchester City",
         analysis:
@@ -235,6 +255,8 @@ async function main() {
       awayTeam: "Celtics",
       league: "NBA",
       country: "Etats-Unis",
+      venue: "Crypto.com Arena, Los Angeles",
+      referee: "Tony Brothers",
       matchDate: hours(-2),
       status: "LIVE",
       homeScore: 58,
@@ -244,6 +266,8 @@ async function main() {
       h2hSummary: "Celtics vainqueurs des 3 dernières confrontations.",
       analysis:
         "Rythme de jeu élevé des deux côtés depuis le début de la rencontre, avec un volume de tirs à 3 points nettement au-dessus de la moyenne de saison des deux équipes. Les bancs pèsent lourd dans ce match, notamment côté Celtics qui tourne davantage son effectif.",
+      homeWinProbability: 47,
+      awayWinProbability: 53,
       recommendation: {
         title: "Plus de 215.5 points",
         analysis:
@@ -284,6 +308,8 @@ async function main() {
       awayTeam: "Monaco",
       league: "Betclic Elite",
       country: "France",
+      venue: "Astroballe, Villeurbanne",
+      referee: "Amandine Coppin",
       matchDate: hours(30),
       status: "UPCOMING",
       homeForm: "LWWLW",
@@ -291,6 +317,8 @@ async function main() {
       h2hSummary: "Monaco sur une série de 12 victoires consécutives.",
       analysis:
         "Monaco s'appuie sur une défense collective très disciplinée qui limite les tirs faciles, un point faible identifié chez ASVEL ces dernières semaines. ASVEL doit composer avec deux absences majeures en attaque, ce qui réduit sensiblement ses options offensives.",
+      homeWinProbability: 38,
+      awayWinProbability: 62,
       recommendation: {
         title: "Victoire Monaco",
         analysis:
@@ -305,6 +333,8 @@ async function main() {
       awayTeam: "C. Alcaraz",
       league: "Roland Garros",
       country: "France",
+      venue: "Court Philippe-Chatrier, Paris",
+      referee: "Renaud Lichtenstein (arbitre de chaise)",
       matchDate: hours(3),
       status: "UPCOMING",
       homeForm: "WWWWL",
@@ -312,6 +342,8 @@ async function main() {
       h2hSummary: "Alcaraz mène 4 victoires à 3 dans les confrontations directes.",
       analysis:
         "Les deux joueurs affichent un niveau physique élevé sur ce début de tournoi, sans set concédé de plus de 6-4. Le style d'Alcaraz, plus offensif sur les échanges courts, contraste avec l'endurance de Djokovic sur les longs points, un facteur clé sur cette surface.",
+      homeWinProbability: 42,
+      awayWinProbability: 58,
       recommendation: {
         title: "Plus de 3.5 sets",
         analysis:
@@ -326,6 +358,8 @@ async function main() {
       awayTeam: "D. Medvedev",
       league: "Wimbledon",
       country: "Royaume-Uni",
+      venue: "Court Central, Londres",
+      referee: "Marija Čičak (arbitre de chaise)",
       matchDate: hours(26),
       status: "UPCOMING",
       homeForm: "WWWWW",
@@ -333,6 +367,8 @@ async function main() {
       h2hSummary: "Sinner a remporté leurs 3 dernières confrontations sur gazon.",
       analysis:
         "Sinner sert particulièrement bien sur cette surface rapide, avec un pourcentage de premières balles au-dessus de sa moyenne de saison. Medvedev, positionné loin derrière la ligne de fond, peine historiquement à contrer les gros serveurs sur gazon.",
+      homeWinProbability: 60,
+      awayWinProbability: 40,
       recommendation: {
         title: "Victoire Sinner en 3 sets",
         analysis:
@@ -350,6 +386,8 @@ async function main() {
         matchDate: m.matchDate,
         homeScore: m.homeScore,
         awayScore: m.awayScore,
+        venue: m.venue,
+        referee: m.referee,
       },
       create: {
         sportId: m.sportId,
@@ -358,6 +396,8 @@ async function main() {
         awayTeam: m.awayTeam,
         league: m.league,
         country: m.country,
+        venue: m.venue,
+        referee: m.referee,
         matchDate: m.matchDate,
         status: m.status,
         homeScore: m.homeScore,
@@ -372,6 +412,9 @@ async function main() {
         awayForm: m.awayForm,
         h2hSummary: m.h2hSummary,
         analysis: m.analysis,
+        homeWinProbability: m.homeWinProbability,
+        drawProbability: m.drawProbability,
+        awayWinProbability: m.awayWinProbability,
       },
       create: {
         matchId: match.id,
@@ -379,6 +422,9 @@ async function main() {
         awayForm: m.awayForm,
         h2hSummary: m.h2hSummary,
         analysis: m.analysis,
+        homeWinProbability: m.homeWinProbability,
+        drawProbability: m.drawProbability,
+        awayWinProbability: m.awayWinProbability,
       },
     });
 
