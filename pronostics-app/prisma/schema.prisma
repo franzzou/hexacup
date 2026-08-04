@@ -1,0 +1,204 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------- UTILISATEURS ----------
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  password  String? // null si connexion Google
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  subscription    Subscription?
+  accounts        Account[] // pour NextAuth (Google etc.)
+  sessions        Session[]
+  recommendations Recommendation[] // recommandations publiées par cet admin
+}
+
+// Modèles requis par NextAuth (Google OAuth + Credentials)
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Requis par l'adapter Prisma de NextAuth (même sans provider email/magic link actif)
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ---------- ABONNEMENTS ----------
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+  PAST_DUE
+  TRIALING
+  INACTIVE
+}
+
+model Subscription {
+  id                   String             @id @default(cuid())
+  userId               String             @unique
+  stripeCustomerId     String?            @unique
+  stripeSubscriptionId String?            @unique
+  status               SubscriptionStatus @default(INACTIVE)
+  currentPeriodEnd     DateTime?
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  user   User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sports SubscriptionSport[] // sports inclus dans l'abonnement
+}
+
+model SubscriptionSport {
+  id             String @id @default(cuid())
+  subscriptionId String
+  sportId        String
+
+  subscription Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  sport        Sport        @relation(fields: [sportId], references: [id], onDelete: Cascade)
+
+  @@unique([subscriptionId, sportId])
+}
+
+// ---------- SPORTS ----------
+
+model Sport {
+  id        String   @id @default(cuid())
+  name      String   @unique // "Football", "Basketball", "Tennis"
+  slug      String   @unique // "football", "basketball", "tennis"
+  apiSource String // ex: "api-football", "api-basketball"
+  createdAt DateTime @default(now())
+
+  matches            Match[]
+  subscriptionSports SubscriptionSport[]
+}
+
+// ---------- MATCHS ----------
+
+enum MatchStatus {
+  UPCOMING
+  LIVE
+  FINISHED
+  POSTPONED
+  CANCELED
+}
+
+model Match {
+  id         String      @id @default(cuid())
+  sportId    String
+  externalId String // id renvoyé par l'API sportive
+  homeTeam   String
+  awayTeam   String
+  league     String?
+  matchDate  DateTime
+  status     MatchStatus @default(UPCOMING)
+  homeScore  Int?
+  awayScore  Int?
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+
+  sport           Sport            @relation(fields: [sportId], references: [id])
+  stats           MatchStats?
+  recommendations Recommendation[]
+
+  @@unique([sportId, externalId])
+  @@index([sportId, matchDate]) // liste des matchs du jour par sport
+  @@index([status])
+}
+
+model MatchStats {
+  id         String   @id @default(cuid())
+  matchId    String   @unique
+  homeForm   String? // ex: "WWDLW"
+  awayForm   String?
+  h2hSummary String? // résumé face-à-face
+  rawData    Json? // données brutes API pour flexibilité
+  updatedAt  DateTime @updatedAt
+
+  match Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
+}
+
+// ---------- RECOMMANDATIONS ----------
+
+enum RecommendationResult {
+  PENDING
+  WON
+  LOST
+  VOID
+}
+
+model Recommendation {
+  id         String               @id @default(cuid())
+  matchId    String
+  title      String // ex: "Plus de 2.5 buts"
+  analysis   String               @db.Text // texte d'analyse
+  confidence Int? // ex: niveau de confiance 1-5
+  result     RecommendationResult @default(PENDING)
+  createdBy  String // id de l'admin qui l'a créée
+  createdAt  DateTime             @default(now())
+  updatedAt  DateTime             @updatedAt
+
+  match Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  admin User  @relation(fields: [createdBy], references: [id])
+
+  @@index([matchId])
+  @@index([result])
+}
+
+// ---------- SUIVI DE PERFORMANCE ----------
+
+model PerformanceHistory {
+  id          String   @id @default(cuid())
+  sportId     String? // null = toutes catégories confondues
+  period      String // ex: "2026-08" (mensuel) ou "2026-W31" (hebdo)
+  totalCount  Int
+  wonCount    Int
+  successRate Float // % calculé, stocké pour affichage rapide
+  updatedAt   DateTime @updatedAt
+
+  @@unique([sportId, period])
+}
