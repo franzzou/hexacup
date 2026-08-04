@@ -115,6 +115,7 @@ model Sport {
 
   matches            Match[]
   subscriptionSports SubscriptionSport[]
+  players            Player[]
 }
 
 // ---------- MATCHS ----------
@@ -145,6 +146,7 @@ model Match {
   sport           Sport            @relation(fields: [sportId], references: [id])
   stats           MatchStats?
   recommendations Recommendation[]
+  lineups         MatchLineup[]
 
   @@unique([sportId, externalId])
   @@index([sportId, matchDate]) // liste des matchs du jour par sport
@@ -158,10 +160,55 @@ model MatchStats {
   homeForm   String? // ex: "WWDLW"
   awayForm   String?
   h2hSummary String? // résumé face-à-face
+  analysis   String?  @db.Text // analyse générale du match, rédigée par l'admin
   rawData    Json? // données brutes API pour flexibilité
   updatedAt  DateTime @updatedAt
 
   match Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
+}
+
+// ---------- COMPOSITIONS ----------
+
+enum MatchSide {
+  HOME
+  AWAY
+}
+
+model Player {
+  id        String   @id @default(cuid())
+  name      String
+  position  String? // ex: "Attaquant", "Meneur", "Défenseur"
+  sportId   String
+  createdAt DateTime @default(now())
+
+  sport         Sport               @relation(fields: [sportId], references: [id], onDelete: Cascade)
+  lineupEntries MatchLineupPlayer[]
+}
+
+model MatchLineup {
+  id        String    @id @default(cuid())
+  matchId   String
+  side      MatchSide
+  formation String? // ex: "4-3-3"
+
+  match   Match               @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  players MatchLineupPlayer[]
+
+  @@unique([matchId, side])
+}
+
+model MatchLineupPlayer {
+  id          String  @id @default(cuid())
+  lineupId    String
+  playerId    String
+  isStarter   Boolean @default(true)
+  shirtNumber Int?
+  note        String? // ex: "joueur clé à surveiller, retour de blessure"
+
+  lineup MatchLineup @relation(fields: [lineupId], references: [id], onDelete: Cascade)
+  player Player      @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@unique([lineupId, playerId])
 }
 
 // ---------- RECOMMANDATIONS ----------

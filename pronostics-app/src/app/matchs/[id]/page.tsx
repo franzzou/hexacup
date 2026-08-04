@@ -5,6 +5,7 @@ import { countryFlag } from "@/lib/countries";
 import { auth } from "@/lib/auth";
 import { userHasSportAccess } from "@/lib/access";
 import { prisma } from "@/lib/prisma";
+import { MatchLineups } from "@/components/match-lineups";
 
 const RESULT_LABELS: Record<string, string> = {
   PENDING: "En attente",
@@ -22,6 +23,14 @@ export default async function MatchPage(props: PageProps<"/matchs/[id]">) {
       sport: true,
       stats: true,
       recommendations: { orderBy: { createdAt: "desc" } },
+      lineups: {
+        include: {
+          players: {
+            include: { player: true },
+            orderBy: [{ isStarter: "desc" }],
+          },
+        },
+      },
     },
   });
 
@@ -80,6 +89,19 @@ export default async function MatchPage(props: PageProps<"/matchs/[id]">) {
               )}
             </section>
           )}
+
+          {match.stats?.analysis && (
+            <section className="flex flex-col gap-2 rounded-lg border border-black/10 p-4 dark:border-white/15">
+              <h2 className="font-semibold">Analyse</h2>
+              <p className="text-sm text-zinc-600 dark:text-zinc-400">{match.stats.analysis}</p>
+            </section>
+          )}
+
+          <MatchLineups
+            lineups={match.lineups}
+            homeTeam={match.homeTeam}
+            awayTeam={match.awayTeam}
+          />
 
           <section className="flex flex-col gap-4">
             <h2 className="font-semibold">Recommandations</h2>
