@@ -1,49 +1,81 @@
-import Link from "next/link";
+import { MatchCard } from "@/components/match-card";
+import { MatchFilters } from "@/components/match-filters";
+import { prisma } from "@/lib/prisma";
 
-import { auth } from "@/lib/auth";
-import { SignOutButton } from "@/components/sign-out-button";
+export default async function Home(props: PageProps<"/">) {
+  const searchParams = await props.searchParams;
+  const sportSlug = typeof searchParams.sport === "string" ? searchParams.sport : undefined;
+  const country = typeof searchParams.country === "string" ? searchParams.country : undefined;
 
-export default async function Home() {
-  const session = await auth();
+  const [sports, countryRows, liveMatches, upcomingMatches] = await Promise.all([
+    prisma.sport.findMany({ orderBy: { name: "asc" } }),
+    prisma.match.findMany({
+      where: { country: { not: null } },
+      select: { country: true },
+      distinct: ["country"],
+      orderBy: { country: "asc" },
+    }),
+    prisma.match.findMany({
+      where: {
+        status: "LIVE",
+        sport: sportSlug ? { slug: sportSlug } : undefined,
+        country: country || undefined,
+      },
+      include: { sport: true },
+      orderBy: { matchDate: "asc" },
+    }),
+    prisma.match.findMany({
+      where: {
+        status: "UPCOMING",
+        sport: sportSlug ? { slug: sportSlug } : undefined,
+        country: country || undefined,
+      },
+      include: { sport: true },
+      orderBy: { matchDate: "asc" },
+    }),
+  ]);
+
+  const hasMatches = liveMatches.length > 0 || upcomingMatches.length > 0;
 
   return (
-    <div className="flex flex-1 flex-col items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex w-full max-w-md flex-col items-center gap-6 rounded-xl border border-black/10 bg-white p-10 text-center dark:border-white/15 dark:bg-black">
-        <h1 className="text-2xl font-semibold">Pronostics</h1>
+    <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-10">
+      <div className="mb-8 flex flex-col gap-4">
+        <h1 className="text-2xl font-semibold">Les matchs du moment</h1>
+        <MatchFilters
+          sports={sports.map((s) => ({ value: s.slug, label: s.name }))}
+          countries={countryRows
+            .filter((c): c is { country: string } => Boolean(c.country))
+            .map((c) => ({ value: c.country, label: c.country }))}
+        />
+      </div>
 
-        {session?.user ? (
-          <div className="flex flex-col items-center gap-3">
-            <p className="text-zinc-600 dark:text-zinc-400">
-              Connecté en tant que{" "}
-              <span className="font-medium text-zinc-950 dark:text-zinc-50">
-                {session.user.email}
-              </span>{" "}
-              ({session.user.role})
-            </p>
-            <SignOutButton />
-          </div>
-        ) : (
-          <div className="flex flex-col items-center gap-3">
-            <p className="text-zinc-600 dark:text-zinc-400">
-              Analyses et recommandations sportives, sans pari réel.
-            </p>
-            <div className="flex gap-3">
-              <Link
-                href="/login"
-                className="rounded-full bg-foreground px-5 py-2 text-sm font-medium text-background"
-              >
-                Se connecter
-              </Link>
-              <Link
-                href="/register"
-                className="rounded-full border border-black/10 px-5 py-2 text-sm font-medium dark:border-white/20"
-              >
-                S&apos;inscrire
-              </Link>
-            </div>
-          </div>
-        )}
-      </main>
-    </div>
+      {!hasMatches && (
+        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+          Aucun match ne correspond à ces filtres pour le moment.
+        </p>
+      )}
+
+      {liveMatches.length > 0 && (
+        <section className="mb-8 flex flex-col gap-3">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+            En direct
+          </h2>
+          {liveMatches.map((match) => (
+            <MatchCard key={match.id} match={match} />
+          ))}
+        </section>
+      )}
+
+      {upcomingMatches.length > 0 && (
+        <section className="flex flex-col gap-3">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+            À venir
+          </h2>
+          {upcomingMatches.map((match) => (
+            <MatchCard key={match.id} match={match} />
+          ))}
+        </section>
+      )}
+    </main>
   );
 }

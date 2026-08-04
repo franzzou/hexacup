@@ -1,26 +1,14 @@
 "use client";
 
-import { signIn } from "next-auth/react";
-import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useState } from "react";
+import { useState } from "react";
 
-export default function RegisterPage() {
-  return (
-    <Suspense>
-      <RegisterForm />
-    </Suspense>
-  );
-}
-
-function RegisterForm() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") ?? "/";
+export default function ContactPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [subject, setSubject] = useState("");
+  const [message, setMessage] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -28,45 +16,44 @@ function RegisterForm() {
     setError(null);
     setLoading(true);
 
-    const res = await fetch("/api/auth/register", {
+    const res = await fetch("/api/contact", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password }),
-    });
-
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      setError(data.error ?? "Une erreur est survenue.");
-      setLoading(false);
-      return;
-    }
-
-    const result = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
+      body: JSON.stringify({ name, email, subject, message }),
     });
 
     setLoading(false);
 
-    if (result?.error) {
-      setError("Compte créé, mais la connexion automatique a échoué. Connecte-toi manuellement.");
-      router.push("/login");
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      setError(data.error ?? "Une erreur est survenue.");
       return;
     }
 
-    router.push(callbackUrl);
+    setSent(true);
+  }
+
+  if (sent) {
+    return (
+      <main className="mx-auto flex w-full max-w-lg flex-1 flex-col items-center justify-center gap-2 px-4 py-16 text-center">
+        <h1 className="text-2xl font-semibold">Message envoyé</h1>
+        <p className="text-zinc-600 dark:text-zinc-400">
+          Merci, on te répond au plus vite par email.
+        </p>
+      </main>
+    );
   }
 
   return (
-    <main className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center gap-6 px-4 py-16">
-      <h1 className="text-2xl font-semibold">Créer un compte</h1>
+    <main className="mx-auto w-full max-w-lg flex-1 px-4 py-16">
+      <h1 className="mb-6 text-2xl font-semibold">Contact</h1>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <label className="flex flex-col gap-1 text-sm">
           Nom
           <input
             type="text"
+            required
             value={name}
             onChange={(e) => setName(e.target.value)}
             className="rounded-md border border-black/10 px-3 py-2 dark:border-white/20"
@@ -83,13 +70,22 @@ function RegisterForm() {
           />
         </label>
         <label className="flex flex-col gap-1 text-sm">
-          Mot de passe (8 caractères min.)
+          Sujet
           <input
-            type="password"
+            type="text"
             required
-            minLength={8}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            value={subject}
+            onChange={(e) => setSubject(e.target.value)}
+            className="rounded-md border border-black/10 px-3 py-2 dark:border-white/20"
+          />
+        </label>
+        <label className="flex flex-col gap-1 text-sm">
+          Message
+          <textarea
+            required
+            rows={5}
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
             className="rounded-md border border-black/10 px-3 py-2 dark:border-white/20"
           />
         </label>
@@ -101,16 +97,9 @@ function RegisterForm() {
           disabled={loading}
           className="rounded-md bg-foreground px-4 py-2 text-sm font-medium text-background disabled:opacity-50"
         >
-          {loading ? "Création..." : "Créer mon compte"}
+          {loading ? "Envoi..." : "Envoyer"}
         </button>
       </form>
-
-      <p className="text-sm text-black/60 dark:text-white/60">
-        Déjà un compte ?{" "}
-        <Link href="/login" className="underline">
-          Se connecter
-        </Link>
-      </p>
     </main>
   );
 }
