@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Pronostics",
+  title: "Parix",
   description: "Analyses et recommandations sportives, sans pari réel.",
 };
 

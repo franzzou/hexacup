@@ -79,9 +79,16 @@ enum SubscriptionStatus {
   INACTIVE
 }
 
+enum PlanType {
+  ECONOMIQUE
+  CLASSIQUE
+  PREMIUM
+}
+
 model Subscription {
   id                   String             @id @default(cuid())
   userId               String             @unique
+  plan                 PlanType?
   stripeCustomerId     String?            @unique
   stripeSubscriptionId String?            @unique
   status               SubscriptionStatus @default(INACTIVE)
