@@ -8,8 +8,7 @@ const STATUS_OPTIONS: { value: string; label: string }[] = [
   { value: "CANCELED", label: "Annulé" },
 ];
 
-const inputClass =
-  "rounded-md border border-black/10 px-3 py-2 text-sm dark:border-white/20 dark:bg-black";
+const inputClass = "input";
 
 export function MatchForm({
   action,
@@ -152,10 +151,7 @@ export function MatchForm({
       </label>
 
       <div className="sm:col-span-2">
-        <button
-          type="submit"
-          className="rounded-full bg-foreground px-5 py-2 text-sm font-medium text-background"
-        >
+        <button type="submit" className="btn-primary">
           {submitLabel}
         </button>
       </div>

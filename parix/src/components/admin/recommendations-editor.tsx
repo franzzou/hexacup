@@ -1,7 +1,6 @@
 import { createRecommendation, updateRecommendationResult } from "@/app/admin/matchs/actions";
 
-const inputClass =
-  "rounded-md border border-black/10 px-3 py-2 text-sm dark:border-white/20 dark:bg-black";
+const inputClass = "input";
 
 const RESULT_OPTIONS = [
   { value: "PENDING", label: "En attente" },
@@ -28,41 +27,37 @@ export function RecommendationsEditor({
   return (
     <div className="flex flex-col gap-4">
       {recommendations.map((rec) => (
-        <div key={rec.id} className="flex flex-col gap-2 rounded-lg border border-black/10 p-4 dark:border-white/15">
+        <div key={rec.id} className="card flex flex-col gap-2 p-4">
           <div className="flex items-center justify-between gap-2">
-            <h4 className="font-medium">{rec.title}</h4>
+            <h4 className="font-semibold">{rec.title}</h4>
             {rec.confidence !== null && (
-              <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                Confiance : {rec.confidence}/5
-              </span>
+              <span className="text-xs font-medium text-accent">Confiance : {rec.confidence}/5</span>
             )}
           </div>
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">{rec.analysis}</p>
+          <p className="text-sm text-muted">{rec.analysis}</p>
           <form action={updateRecommendationResult} className="flex items-center gap-2">
             <input type="hidden" name="matchId" value={matchId} />
             <input type="hidden" name="recommendationId" value={rec.id} />
-            <select name="result" defaultValue={rec.result} className={`${inputClass} py-1`}>
+            <select name="result" defaultValue={rec.result} className={`${inputClass} py-1.5`}>
               {RESULT_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
               ))}
             </select>
-            <button type="submit" className="rounded-md border border-black/10 px-3 py-1.5 text-xs dark:border-white/20">
+            <button type="submit" className="btn-secondary px-3 py-1.5 text-xs">
               Mettre à jour le résultat
             </button>
           </form>
         </div>
       ))}
       {recommendations.length === 0 && (
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
-          Aucune recommandation publiée pour ce match.
-        </p>
+        <p className="text-sm text-muted">Aucune recommandation publiée pour ce match.</p>
       )}
 
-      <form action={createRecommendation} className="flex flex-col gap-3 rounded-lg border border-black/10 p-4 dark:border-white/15">
+      <form action={createRecommendation} className="card flex flex-col gap-3 p-4">
         <input type="hidden" name="matchId" value={matchId} />
-        <h4 className="font-medium">Publier une recommandation</h4>
+        <h4 className="font-semibold">Publier une recommandation</h4>
         <label className="flex flex-col gap-1 text-sm">
           Titre
           <input type="text" name="title" required placeholder="ex: Plus de 2.5 buts" className={inputClass} />
@@ -75,7 +70,7 @@ export function RecommendationsEditor({
           Confiance (1-5)
           <input type="number" name="confidence" min={1} max={5} className={inputClass} />
         </label>
-        <button type="submit" className="w-fit rounded-full bg-foreground px-5 py-2 text-sm font-medium text-background">
+        <button type="submit" className="btn-primary w-fit">
           Publier
         </button>
       </form>

@@ -51,30 +51,35 @@ export function SubscribeForm({
   return (
     <div className="flex flex-col gap-3">
       {needsSelection && (
-        <fieldset className="flex flex-col gap-1.5 text-sm">
-          <legend className="mb-1 text-xs text-zinc-500 dark:text-zinc-400">
+        <fieldset className="flex flex-col gap-2 text-sm">
+          <legend className="mb-1 text-xs font-medium text-muted">
             Choisis {plan.sportsRequired} sport{plan.sportsRequired! > 1 ? "s" : ""}
           </legend>
-          {sports.map((sport) => (
-            <label key={sport.slug} className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={selected.includes(sport.slug)}
-                onChange={() => toggleSport(sport.slug)}
-              />
-              {sport.name}
-            </label>
-          ))}
+          <div className="flex flex-wrap gap-2">
+            {sports.map((sport) => (
+              <label key={sport.slug} className="cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="peer sr-only"
+                  checked={selected.includes(sport.slug)}
+                  onChange={() => toggleSport(sport.slug)}
+                />
+                <span className="inline-block rounded-full border border-border px-3 py-1.5 text-xs font-medium text-muted transition-colors peer-checked:border-accent peer-checked:bg-accent/15 peer-checked:text-accent">
+                  {sport.name}
+                </span>
+              </label>
+            ))}
+          </div>
         </fieldset>
       )}
 
-      {error && <p className="text-xs text-red-600">{error}</p>}
+      {error && <p className="text-xs text-danger">{error}</p>}
 
       <button
         type="button"
         onClick={handleSubscribe}
         disabled={!isValid || loading}
-        className="rounded-full bg-foreground px-5 py-2 text-center text-sm font-medium text-background disabled:opacity-50"
+        className="btn-primary w-full"
       >
         {loading ? "Redirection..." : "S'abonner"}
       </button>

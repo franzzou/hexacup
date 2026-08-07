@@ -1,26 +1,84 @@
 @import "tailwindcss";
 
+/*
+  Identité Parix : thème sombre "site de paris" assumé (pas de bascule
+  clair/sombre — c'est la charte, pas une préférence système), accent
+  rouge/blanc.
+*/
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #08080a;
+  --surface: #131316;
+  --surface-2: #1c1c20;
+  --border: #29292f;
+  --foreground: #f7f7f8;
+  --muted: #9a9aa3;
+
+  --accent: #e0293f;
+  --accent-hover: #f23f54;
+  --accent-foreground: #ffffff;
+
+  --success: #22c55e;
+  --danger: #ef4444;
+  --warning: #eab308;
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
   --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-success: var(--success);
+  --color-danger: var(--danger);
+  --color-warning: var(--warning);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+
+/* Composants réutilisés à travers le site */
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 bg-accent text-accent-foreground hover:bg-accent-hover;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 border border-border bg-surface text-foreground hover:border-accent/60 hover:bg-surface-2;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 text-muted hover:text-foreground;
+  }
+
+  .card {
+    @apply rounded-xl border border-border bg-surface;
+  }
+
+  .input {
+    @apply w-full rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm text-foreground placeholder:text-muted focus:border-accent focus:outline-none;
+  }
+
+  .badge {
+    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold uppercase tracking-wide;
+  }
+  .badge-live {
+    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold uppercase tracking-wide bg-accent/15 text-accent;
+  }
+  .badge-neutral {
+    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold uppercase tracking-wide bg-surface-2 text-muted;
+  }
 }

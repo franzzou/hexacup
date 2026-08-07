@@ -59,58 +59,56 @@ function RegisterForm() {
   }
 
   return (
-    <main className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center gap-6 px-4 py-16">
-      <h1 className="text-2xl font-semibold">Créer un compte</h1>
+    <main className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center px-4 py-16">
+      <div className="card flex flex-col gap-6 p-8">
+        <h1 className="text-2xl font-black tracking-tight">Créer un compte</h1>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <label className="flex flex-col gap-1 text-sm">
-          Nom
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="rounded-md border border-black/10 px-3 py-2 dark:border-white/20"
-          />
-        </label>
-        <label className="flex flex-col gap-1 text-sm">
-          Email
-          <input
-            type="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="rounded-md border border-black/10 px-3 py-2 dark:border-white/20"
-          />
-        </label>
-        <label className="flex flex-col gap-1 text-sm">
-          Mot de passe (8 caractères min.)
-          <input
-            type="password"
-            required
-            minLength={8}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="rounded-md border border-black/10 px-3 py-2 dark:border-white/20"
-          />
-        </label>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <label className="flex flex-col gap-1.5 text-sm">
+            Nom
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="input"
+            />
+          </label>
+          <label className="flex flex-col gap-1.5 text-sm">
+            Email
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="input"
+            />
+          </label>
+          <label className="flex flex-col gap-1.5 text-sm">
+            Mot de passe (8 caractères min.)
+            <input
+              type="password"
+              required
+              minLength={8}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="input"
+            />
+          </label>
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="text-sm text-danger">{error}</p>}
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="rounded-md bg-foreground px-4 py-2 text-sm font-medium text-background disabled:opacity-50"
-        >
-          {loading ? "Création..." : "Créer mon compte"}
-        </button>
-      </form>
+          <button type="submit" disabled={loading} className="btn-primary w-full">
+            {loading ? "Création..." : "Créer mon compte"}
+          </button>
+        </form>
 
-      <p className="text-sm text-black/60 dark:text-white/60">
-        Déjà un compte ?{" "}
-        <Link href="/login" className="underline">
-          Se connecter
-        </Link>
-      </p>
+        <p className="text-sm text-muted">
+          Déjà un compte ?{" "}
+          <Link href="/login" className="font-medium text-accent hover:underline">
+            Se connecter
+          </Link>
+        </p>
+      </div>
     </main>
   );
 }

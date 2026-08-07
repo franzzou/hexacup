@@ -28,11 +28,11 @@ export function ManageSubscriptionButton({ className }: { className?: string }) 
         type="button"
         onClick={handleClick}
         disabled={loading}
-        className={className ?? "rounded-full bg-foreground px-5 py-2 text-sm font-medium text-background disabled:opacity-50"}
+        className={className ?? "btn-primary"}
       >
         {loading ? "Redirection..." : "Gérer mon abonnement"}
       </button>
-      {error && <p className="text-xs text-red-600">{error}</p>}
+      {error && <p className="text-xs text-danger">{error}</p>}
     </div>
   );
 }

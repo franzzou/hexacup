@@ -19,29 +19,31 @@ export function MatchCard({ match }: { match: MatchCardData }) {
   return (
     <Link
       href={`/matchs/${match.id}`}
-      className="flex items-center justify-between gap-4 rounded-lg border border-black/10 bg-white px-4 py-3 transition-colors hover:border-black/25 dark:border-white/15 dark:bg-black dark:hover:border-white/30"
+      className="group flex items-center justify-between gap-4 rounded-lg border border-border bg-surface px-4 py-3.5 transition-colors hover:border-accent/50 hover:bg-surface-2"
     >
       <div className="flex flex-1 flex-col gap-1">
-        <div className="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
-          <span>{match.sport.name}</span>
+        <div className="flex items-center gap-2 text-xs text-muted">
+          <span className="font-semibold uppercase tracking-wide text-muted/80">
+            {match.sport.name}
+          </span>
           <span>·</span>
           <span>
             {countryFlag(match.country)} {match.league ?? match.country}
           </span>
         </div>
-        <div className="font-medium">
-          {match.homeTeam} <span className="text-zinc-400">vs</span> {match.awayTeam}
+        <div className="font-semibold text-foreground">
+          {match.homeTeam} <span className="text-muted">vs</span> {match.awayTeam}
         </div>
       </div>
 
       <div className="flex flex-col items-end gap-1">
         {match.status === "LIVE" ? (
-          <span className="flex items-center gap-1.5 rounded-full bg-red-600/10 px-2.5 py-1 text-xs font-semibold text-red-600">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-red-600" />
-            EN DIRECT
+          <span className="badge-live">
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-accent" />
+            En direct
           </span>
         ) : (
-          <span className="text-xs text-zinc-500 dark:text-zinc-400">
+          <span className="text-xs font-medium text-muted">
             {match.matchDate.toLocaleString("fr-FR", {
               weekday: "short",
               day: "numeric",
@@ -52,7 +54,7 @@ export function MatchCard({ match }: { match: MatchCardData }) {
           </span>
         )}
         {match.status === "LIVE" && match.homeScore !== null && match.awayScore !== null && (
-          <span className="text-sm font-semibold">
+          <span className="text-sm font-bold text-foreground">
             {match.homeScore} - {match.awayScore}
           </span>
         )}

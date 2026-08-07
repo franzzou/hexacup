@@ -14,29 +14,27 @@ export function WinProbability({
   if (home === null || away === null) return null;
 
   return (
-    <section className="flex flex-col gap-3 rounded-lg border border-black/10 p-4 dark:border-white/15">
-      <h2 className="font-semibold">Chances de gagner</h2>
+    <section className="card flex flex-col gap-3 p-5">
+      <h2 className="font-bold">Chances de gagner</h2>
 
-      <div className="flex h-3 overflow-hidden rounded-full bg-black/5 dark:bg-white/10">
-        <div className="bg-blue-600" style={{ width: `${home}%` }} />
-        {draw !== null && <div className="bg-zinc-400" style={{ width: `${draw}%` }} />}
-        <div className="bg-red-500" style={{ width: `${away}%` }} />
+      <div className="flex h-2.5 overflow-hidden rounded-full bg-surface-2">
+        <div className="bg-accent" style={{ width: `${home}%` }} />
+        {draw !== null && <div className="bg-muted/50" style={{ width: `${draw}%` }} />}
+        <div className="bg-foreground" style={{ width: `${away}%` }} />
       </div>
 
       <div className="flex justify-between text-sm">
         <span>
-          <span className="font-medium">{home}%</span>{" "}
-          <span className="text-zinc-500 dark:text-zinc-400">{homeTeam}</span>
+          <span className="font-bold text-accent">{home}%</span>{" "}
+          <span className="text-muted">{homeTeam}</span>
         </span>
         {draw !== null && (
           <span>
-            <span className="font-medium">{draw}%</span>{" "}
-            <span className="text-zinc-500 dark:text-zinc-400">Nul</span>
+            <span className="font-bold">{draw}%</span> <span className="text-muted">Nul</span>
           </span>
         )}
         <span>
-          <span className="font-medium">{away}%</span>{" "}
-          <span className="text-zinc-500 dark:text-zinc-400">{awayTeam}</span>
+          <span className="font-bold">{away}%</span> <span className="text-muted">{awayTeam}</span>
         </span>
       </div>
     </section>

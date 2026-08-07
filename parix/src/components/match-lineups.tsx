@@ -28,8 +28,8 @@ export function MatchLineups({
   if (!home && !away) return null;
 
   return (
-    <section className="flex flex-col gap-4 rounded-lg border border-black/10 p-4 dark:border-white/15">
-      <h2 className="font-semibold">Compositions</h2>
+    <section className="card flex flex-col gap-4 p-5">
+      <h2 className="font-bold">Compositions</h2>
       <div className="grid gap-6 sm:grid-cols-2">
         <LineupColumn team={homeTeam} lineup={home} />
         <LineupColumn team={awayTeam} lineup={away} />
@@ -42,44 +42,34 @@ function LineupColumn({ team, lineup }: { team: string; lineup?: Lineup }) {
   if (!lineup) {
     return (
       <div>
-        <h3 className="mb-2 text-sm font-medium">{team}</h3>
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
-          Composition non communiquée.
-        </p>
+        <h3 className="mb-2 text-sm font-semibold">{team}</h3>
+        <p className="text-sm text-muted">Composition non communiquée.</p>
       </div>
     );
   }
 
   return (
     <div>
-      <h3 className="mb-2 text-sm font-medium">
+      <h3 className="mb-2 text-sm font-semibold">
         {team}
-        {lineup.formation && (
-          <span className="ml-2 text-xs text-zinc-500 dark:text-zinc-400">
-            ({lineup.formation})
-          </span>
-        )}
+        {lineup.formation && <span className="ml-2 text-xs font-normal text-muted">({lineup.formation})</span>}
       </h3>
-      <ul className="flex flex-col gap-2 text-sm">
+      <ul className="flex flex-col gap-2.5 text-sm">
         {lineup.players.map((entry) => (
           <li key={entry.id}>
             <div className="flex items-center gap-2">
               {entry.shirtNumber !== null && (
-                <span className="text-zinc-400">{entry.shirtNumber}</span>
+                <span className="w-4 shrink-0 text-right text-xs font-bold text-accent">
+                  {entry.shirtNumber}
+                </span>
               )}
               <span className="font-medium">{entry.player.name}</span>
               {entry.player.position && (
-                <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                  {entry.player.position}
-                </span>
+                <span className="text-xs text-muted">{entry.player.position}</span>
               )}
-              {!entry.isStarter && (
-                <span className="text-xs text-zinc-400">(remplaçant)</span>
-              )}
+              {!entry.isStarter && <span className="text-xs text-muted">(remplaçant)</span>}
             </div>
-            {entry.note && (
-              <p className="ml-6 text-xs text-zinc-500 dark:text-zinc-400">{entry.note}</p>
-            )}
+            {entry.note && <p className="ml-6 text-xs text-muted">{entry.note}</p>}
           </li>
         ))}
       </ul>

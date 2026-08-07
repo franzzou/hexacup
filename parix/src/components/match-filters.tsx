@@ -29,7 +29,7 @@ export function MatchFilters({
       <select
         value={searchParams.get("sport") ?? ""}
         onChange={(e) => updateParam("sport", e.target.value)}
-        className="rounded-md border border-black/10 bg-white px-3 py-2 text-sm dark:border-white/20 dark:bg-black"
+        className="input w-auto py-2 font-medium"
       >
         <option value="">Tous les sports</option>
         {sports.map((s) => (
@@ -42,7 +42,7 @@ export function MatchFilters({
       <select
         value={searchParams.get("country") ?? ""}
         onChange={(e) => updateParam("country", e.target.value)}
-        className="rounded-md border border-black/10 bg-white px-3 py-2 text-sm dark:border-white/20 dark:bg-black"
+        className="input w-auto py-2 font-medium"
       >
         <option value="">Tous les pays</option>
         {countries.map((c) => (

@@ -21,19 +21,22 @@ export default async function OffresPage() {
   const currentPlan = subscription?.plan ? getPlan(subscription.plan.toLowerCase()) : undefined;
 
   return (
-    <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-10">
+    <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-12">
       <div className="mb-10 text-center">
-        <h1 className="text-2xl font-semibold">Nos offres</h1>
-        <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+        <h1 className="text-3xl font-black tracking-tight">Nos offres</h1>
+        <p className="mx-auto mt-2 max-w-md text-sm text-muted">
           Accède aux fiches détaillées, statistiques et recommandations selon le
           sport de ton choix. Sans engagement, résiliable à tout moment.
         </p>
       </div>
 
       {subscription?.status === "ACTIVE" && (
-        <div className="mx-auto mb-10 flex max-w-md flex-col items-center gap-3 rounded-xl border border-black/10 p-6 text-center dark:border-white/15">
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">
-            Offre actuelle : <span className="font-medium">{currentPlan?.name ?? subscription.plan}</span>
+        <div className="card mx-auto mb-10 flex max-w-md flex-col items-center gap-3 p-6 text-center">
+          <p className="text-sm text-muted">
+            Offre actuelle :{" "}
+            <span className="font-semibold text-foreground">
+              {currentPlan?.name ?? subscription.plan}
+            </span>
             {subscription.sports.length > 0 && (
               <> — {subscription.sports.map((s) => s.sport.name).join(", ")}</>
             )}
@@ -46,42 +49,39 @@ export default async function OffresPage() {
         {PLANS.map((plan) => (
           <div
             key={plan.slug}
-            className={`flex flex-col gap-4 rounded-xl border p-6 ${
+            className={`relative flex flex-col gap-4 rounded-xl p-6 ${
               plan.highlighted
-                ? "border-foreground shadow-sm"
-                : "border-black/10 dark:border-white/15"
+                ? "border-2 border-accent bg-surface shadow-[0_0_40px_-12px_var(--accent)]"
+                : "card"
             }`}
           >
             {plan.highlighted && (
-              <span className="w-fit rounded-full bg-foreground px-3 py-1 text-xs font-medium text-background">
+              <span className="absolute -top-3 left-6 rounded-full bg-accent px-3 py-1 text-xs font-bold uppercase tracking-wide text-accent-foreground">
                 Recommandé
               </span>
             )}
-            <h2 className="text-lg font-semibold">{plan.name}</h2>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">{plan.sportsIncluded}</p>
+            <h2 className="text-lg font-bold">{plan.name}</h2>
+            <p className="text-sm text-muted">{plan.sportsIncluded}</p>
             <p>
-              <span className="text-3xl font-semibold">{plan.price}</span>
-              <span className="text-sm text-zinc-500 dark:text-zinc-400"> / mois</span>
+              <span className="text-3xl font-black tracking-tight">{plan.price}</span>
+              <span className="text-sm text-muted"> / mois</span>
             </p>
-            <p className="text-sm text-zinc-600 dark:text-zinc-400">{plan.description}</p>
+            <p className="text-sm text-muted">{plan.description}</p>
             <ul className="flex flex-1 flex-col gap-2 text-sm">
               {plan.features.map((feature) => (
                 <li key={feature} className="flex gap-2">
-                  <span>✓</span>
+                  <span className="font-bold text-success">✓</span>
                   <span>{feature}</span>
                 </li>
               ))}
             </ul>
 
             {!session?.user ? (
-              <Link
-                href="/register?callbackUrl=/offres"
-                className="rounded-full bg-foreground px-5 py-2 text-center text-sm font-medium text-background"
-              >
+              <Link href="/register?callbackUrl=/offres" className="btn-primary w-full">
                 S&apos;inscrire
               </Link>
             ) : hasStripeCustomer ? (
-              <p className="text-center text-xs text-zinc-500 dark:text-zinc-400">
+              <p className="text-center text-xs text-muted">
                 Utilise la gestion d&apos;abonnement ci-dessus pour changer d&apos;offre.
               </p>
             ) : (

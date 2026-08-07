@@ -28,19 +28,19 @@ const FAQ_ITEMS = [
 
 export default function FaqPage() {
   return (
-    <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-10">
-      <h1 className="mb-8 text-2xl font-semibold">Questions fréquentes</h1>
+    <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-12">
+      <h1 className="mb-8 text-3xl font-black tracking-tight">Questions fréquentes</h1>
 
       <div className="flex flex-col gap-3">
         {FAQ_ITEMS.map((item) => (
-          <details
-            key={item.question}
-            className="group rounded-lg border border-black/10 p-4 dark:border-white/15"
-          >
-            <summary className="cursor-pointer list-none font-medium marker:content-none">
+          <details key={item.question} className="card group p-4">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-semibold marker:content-none">
               {item.question}
+              <span className="shrink-0 text-lg text-accent transition-transform group-open:rotate-45">
+                +
+              </span>
             </summary>
-            <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">{item.answer}</p>
+            <p className="mt-3 text-sm text-muted">{item.answer}</p>
           </details>
         ))}
       </div>

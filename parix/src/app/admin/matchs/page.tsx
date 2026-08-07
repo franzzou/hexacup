@@ -20,18 +20,15 @@ export default async function AdminMatchsPage() {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Matchs</h1>
-        <Link
-          href="/admin/matchs/nouveau"
-          className="rounded-full bg-foreground px-4 py-2 text-sm font-medium text-background"
-        >
+        <h1 className="text-xl font-bold">Matchs</h1>
+        <Link href="/admin/matchs/nouveau" className="btn-primary">
           + Nouveau match
         </Link>
       </div>
 
-      <div className="overflow-x-auto rounded-lg border border-black/10 dark:border-white/15">
+      <div className="card overflow-x-auto">
         <table className="w-full text-left text-sm">
-          <thead className="border-b border-black/10 text-xs text-zinc-500 dark:border-white/15 dark:text-zinc-400">
+          <thead className="border-b border-border text-xs text-muted">
             <tr>
               <th className="px-4 py-2">Sport</th>
               <th className="px-4 py-2">Match</th>
@@ -42,12 +39,12 @@ export default async function AdminMatchsPage() {
           </thead>
           <tbody>
             {matches.map((match) => (
-              <tr key={match.id} className="border-b border-black/5 last:border-0 dark:border-white/10">
+              <tr key={match.id} className="border-b border-border last:border-0">
                 <td className="px-4 py-2">{match.sport.name}</td>
-                <td className="px-4 py-2">
+                <td className="px-4 py-2 font-medium">
                   {match.homeTeam} vs {match.awayTeam}
                 </td>
-                <td className="px-4 py-2 text-zinc-500 dark:text-zinc-400">
+                <td className="px-4 py-2 text-muted">
                   {match.matchDate.toLocaleString("fr-FR", {
                     day: "numeric",
                     month: "short",
@@ -57,7 +54,7 @@ export default async function AdminMatchsPage() {
                 </td>
                 <td className="px-4 py-2">{STATUS_LABELS[match.status]}</td>
                 <td className="px-4 py-2 text-right">
-                  <Link href={`/admin/matchs/${match.id}`} className="underline">
+                  <Link href={`/admin/matchs/${match.id}`} className="font-medium text-accent hover:underline">
                     Modifier
                   </Link>
                 </td>
@@ -65,7 +62,7 @@ export default async function AdminMatchsPage() {
             ))}
             {matches.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-6 text-center text-zinc-500 dark:text-zinc-400">
+                <td colSpan={5} className="px-4 py-6 text-center text-muted">
                   Aucun match pour le moment.
                 </td>
               </tr>
