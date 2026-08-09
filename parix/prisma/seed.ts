@@ -1,5 +1,6 @@
 import bcrypt from "bcryptjs";
 
+import { computeConfidenceScore } from "../src/lib/confidence";
 import { prisma } from "../src/lib/prisma";
 
 async function main() {
@@ -76,6 +77,27 @@ async function main() {
     players: SeedLineupPlayer[];
   };
 
+  type SeedRecommendation = {
+    title: string;
+    market:
+      | "MATCH_WINNER"
+      | "OVER_UNDER"
+      | "BOTH_TEAMS_SCORE"
+      | "HANDICAP"
+      | "SETS_GAMES"
+      | "CORNERS_CARDS"
+      | "OTHER";
+    analysis: string;
+    formScore?: number;
+    h2hScore?: number;
+    contextScore?: number;
+    statsScore?: number;
+    marketScore?: number;
+    odds?: number;
+    watchOnly?: boolean;
+    result?: "PENDING" | "WON" | "LOST" | "VOID";
+  };
+
   type SeedMatch = {
     sportId: string;
     externalId: string;
@@ -86,7 +108,7 @@ async function main() {
     venue?: string;
     referee?: string;
     matchDate: Date;
-    status: "LIVE" | "UPCOMING";
+    status: "LIVE" | "UPCOMING" | "FINISHED";
     homeScore?: number;
     awayScore?: number;
     homeForm: string;
@@ -96,7 +118,8 @@ async function main() {
     homeWinProbability?: number;
     drawProbability?: number;
     awayWinProbability?: number;
-    recommendation: { title: string; analysis: string; confidence: number };
+    advancedStats?: Record<string, number>;
+    recommendation: SeedRecommendation;
     lineups?: SeedLineup[];
   };
 
@@ -122,11 +145,18 @@ async function main() {
       homeWinProbability: 58,
       drawProbability: 24,
       awayWinProbability: 18,
+      advancedStats: { homeAvgXg: 2.1, homeAvgXga: 1.0, awayAvgXg: 1.4, awayAvgXga: 1.6 },
       recommendation: {
         title: "Plus de 2.5 buts",
+        market: "OVER_UNDER",
         analysis:
           "Les deux équipes marquent régulièrement cette saison (moyenne de 3.1 buts/match sur leurs 5 dernières rencontres). PSG doit faire sans deux titulaires en défense, ce qui ouvre des espaces.",
-        confidence: 4,
+        formScore: 80,
+        h2hScore: 70,
+        contextScore: 75,
+        statsScore: 85,
+        marketScore: 60,
+        odds: 1.75,
       },
       lineups: [
         {
@@ -188,9 +218,15 @@ async function main() {
       awayWinProbability: 29,
       recommendation: {
         title: "Les deux équipes marquent",
+        market: "BOTH_TEAMS_SCORE",
         analysis:
           "Sur les 8 derniers Clasicos, les deux équipes ont marqué à 7 reprises. Barcelone joue sans son gardien titulaire, suspendu.",
-        confidence: 5,
+        formScore: 85,
+        h2hScore: 95,
+        contextScore: 80,
+        statsScore: 88,
+        marketScore: 70,
+        odds: 1.55,
       },
       lineups: [
         {
@@ -244,9 +280,16 @@ async function main() {
       awayWinProbability: 26,
       recommendation: {
         title: "Victoire Manchester City",
+        market: "MATCH_WINNER",
         analysis:
           "City reste sur 9 victoires consécutives à domicile toutes compétitions confondues. Liverpool aborde ce match après un déplacement européen en semaine.",
-        confidence: 3,
+        formScore: 65,
+        h2hScore: 60,
+        contextScore: 55,
+        statsScore: 60,
+        marketScore: 50,
+        odds: 2.05,
+        watchOnly: true,
       },
     },
     {
@@ -269,11 +312,18 @@ async function main() {
         "Rythme de jeu élevé des deux côtés depuis le début de la rencontre, avec un volume de tirs à 3 points nettement au-dessus de la moyenne de saison des deux équipes. Les bancs pèsent lourd dans ce match, notamment côté Celtics qui tourne davantage son effectif.",
       homeWinProbability: 47,
       awayWinProbability: 53,
+      advancedStats: { homeOffRating: 118.2, homeDefRating: 112.4, awayOffRating: 119.5, awayDefRating: 110.1, homePace: 101.3, awayPace: 100.8 },
       recommendation: {
         title: "Plus de 215.5 points",
+        market: "OVER_UNDER",
         analysis:
           "Les deux équipes tournent à un rythme offensif élevé sur les 10 derniers matchs (moyenne combinée de 224 points).",
-        confidence: 4,
+        formScore: 75,
+        h2hScore: 65,
+        contextScore: 70,
+        statsScore: 90,
+        marketScore: 55,
+        odds: 1.90,
       },
       lineups: [
         {
@@ -322,9 +372,15 @@ async function main() {
       awayWinProbability: 62,
       recommendation: {
         title: "Victoire Monaco",
+        market: "MATCH_WINNER",
         analysis:
           "Monaco impressionne cette saison et aligne les victoires en déplacement. ASVEL doit composer avec deux absences majeures en attaque.",
-        confidence: 3,
+        formScore: 70,
+        h2hScore: 60,
+        contextScore: 65,
+        statsScore: 55,
+        marketScore: 50,
+        odds: 1.65,
       },
     },
     {
@@ -345,11 +401,18 @@ async function main() {
         "Les deux joueurs affichent un niveau physique élevé sur ce début de tournoi, sans set concédé de plus de 6-4. Le style d'Alcaraz, plus offensif sur les échanges courts, contraste avec l'endurance de Djokovic sur les longs points, un facteur clé sur cette surface.",
       homeWinProbability: 42,
       awayWinProbability: 58,
+      advancedStats: { homeServeWinPct: 68.5, awayServeWinPct: 71.2, homeReturnWinPct: 34.0, awayReturnWinPct: 36.5 },
       recommendation: {
         title: "Plus de 3.5 sets",
+        market: "SETS_GAMES",
         analysis:
           "Leurs 4 dernières confrontations sur terre battue sont toutes allées à 4 ou 5 sets. Les deux joueurs sont en pleine forme physique.",
-        confidence: 4,
+        formScore: 78,
+        h2hScore: 85,
+        contextScore: 70,
+        statsScore: 75,
+        marketScore: 60,
+        odds: 2.20,
       },
     },
     {
@@ -372,9 +435,103 @@ async function main() {
       awayWinProbability: 40,
       recommendation: {
         title: "Victoire Sinner en 3 sets",
+        market: "MATCH_WINNER",
         analysis:
           "Sinner n'a perdu qu'un set sur les deux derniers tours. Medvedev peine historiquement sur gazon contre les serveurs puissants.",
-        confidence: 3,
+        formScore: 60,
+        h2hScore: 65,
+        contextScore: 60,
+        statsScore: 65,
+        marketScore: 45,
+        odds: 1.80,
+      },
+    },
+    // Matchs terminés, pour peupler la page /performances avec un vrai historique
+    {
+      sportId: football.id,
+      externalId: "demo-fb-hist-1",
+      homeTeam: "Lyon",
+      awayTeam: "Nice",
+      league: "Ligue 1",
+      country: "France",
+      venue: "Groupama Stadium, Lyon",
+      matchDate: hours(-72),
+      status: "FINISHED",
+      homeScore: 3,
+      awayScore: 1,
+      homeForm: "WWDWL",
+      awayForm: "LDWDL",
+      h2hSummary: "Lyon invaincu sur les 3 dernières réceptions de Nice.",
+      analysis: "Lyon avait l'avantage du terrain face à une équipe niçoise fragile en déplacement.",
+      recommendation: {
+        title: "Plus de 2.5 buts",
+        market: "OVER_UNDER",
+        analysis: "Les deux équipes affichaient une moyenne de buts élevée sur leurs derniers matchs.",
+        formScore: 75,
+        h2hScore: 70,
+        contextScore: 65,
+        statsScore: 80,
+        marketScore: 55,
+        odds: 1.90,
+        result: "WON",
+      },
+    },
+    {
+      sportId: basketball.id,
+      externalId: "demo-bb-hist-1",
+      homeTeam: "Warriors",
+      awayTeam: "Nuggets",
+      league: "NBA",
+      country: "Etats-Unis",
+      venue: "Chase Center, San Francisco",
+      matchDate: hours(-120),
+      status: "FINISHED",
+      homeScore: 104,
+      awayScore: 118,
+      homeForm: "LWLDL",
+      awayForm: "WWWLW",
+      h2hSummary: "Denver vainqueur des 2 dernières confrontations.",
+      analysis: "Denver dominait statistiquement mais Golden State restait dangereux à domicile.",
+      recommendation: {
+        title: "Écart Warriors -4.5",
+        market: "HANDICAP",
+        analysis: "Golden State semblait en mesure de limiter l'écart à domicile malgré l'infériorité de niveau.",
+        formScore: 45,
+        h2hScore: 40,
+        contextScore: 50,
+        statsScore: 45,
+        marketScore: 40,
+        odds: 1.95,
+        result: "LOST",
+      },
+    },
+    {
+      sportId: tennis.id,
+      externalId: "demo-tn-hist-1",
+      homeTeam: "C. Alcaraz",
+      awayTeam: "A. Zverev",
+      league: "Masters 1000",
+      country: "France",
+      venue: "Court Central, Paris",
+      matchDate: hours(-48),
+      status: "FINISHED",
+      homeScore: 2,
+      awayScore: 0,
+      homeForm: "WWWWW",
+      awayForm: "WLWWL",
+      h2hSummary: "Alcaraz mène 5 victoires à 2 dans les confrontations directes.",
+      analysis: "Alcaraz en pleine forme, supérieur sur cette surface rapide.",
+      recommendation: {
+        title: "Victoire Alcaraz",
+        market: "MATCH_WINNER",
+        analysis: "Alcaraz nettement supérieur sur cette surface et sur la forme du moment.",
+        formScore: 85,
+        h2hScore: 80,
+        contextScore: 75,
+        statsScore: 80,
+        marketScore: 60,
+        odds: 1.60,
+        result: "WON",
       },
     },
   ];
@@ -406,40 +563,46 @@ async function main() {
       },
     });
 
+    const statsData = {
+      homeForm: m.homeForm,
+      awayForm: m.awayForm,
+      h2hSummary: m.h2hSummary,
+      analysis: m.analysis,
+      homeWinProbability: m.homeWinProbability,
+      drawProbability: m.drawProbability,
+      awayWinProbability: m.awayWinProbability,
+      ...m.advancedStats,
+    };
+
     await prisma.matchStats.upsert({
       where: { matchId: match.id },
-      update: {
-        homeForm: m.homeForm,
-        awayForm: m.awayForm,
-        h2hSummary: m.h2hSummary,
-        analysis: m.analysis,
-        homeWinProbability: m.homeWinProbability,
-        drawProbability: m.drawProbability,
-        awayWinProbability: m.awayWinProbability,
-      },
-      create: {
-        matchId: match.id,
-        homeForm: m.homeForm,
-        awayForm: m.awayForm,
-        h2hSummary: m.h2hSummary,
-        analysis: m.analysis,
-        homeWinProbability: m.homeWinProbability,
-        drawProbability: m.drawProbability,
-        awayWinProbability: m.awayWinProbability,
-      },
+      update: statsData,
+      create: { matchId: match.id, ...statsData },
     });
 
     const existingRecommendation = await prisma.recommendation.findFirst({
       where: { matchId: match.id },
     });
     if (!existingRecommendation) {
+      const scores = {
+        formScore: m.recommendation.formScore,
+        h2hScore: m.recommendation.h2hScore,
+        contextScore: m.recommendation.contextScore,
+        statsScore: m.recommendation.statsScore,
+        marketScore: m.recommendation.marketScore,
+      };
       await prisma.recommendation.create({
         data: {
           matchId: match.id,
           title: m.recommendation.title,
+          market: m.recommendation.market,
           analysis: m.recommendation.analysis,
-          confidence: m.recommendation.confidence,
+          odds: m.recommendation.odds,
+          watchOnly: m.recommendation.watchOnly ?? false,
+          result: m.recommendation.result ?? "PENDING",
           createdBy: admin.id,
+          ...scores,
+          confidenceScore: computeConfidenceScore(scores),
         },
       });
     }

@@ -16,6 +16,7 @@ export default async function AdminMatchPage(props: PageProps<"/admin/matchs/[id
     prisma.match.findUnique({
       where: { id },
       include: {
+        sport: true,
         stats: true,
         recommendations: { orderBy: { createdAt: "desc" } },
         lineups: {
@@ -93,6 +94,86 @@ export default async function AdminMatchPage(props: PageProps<"/admin/matchs/[id
             Chances de victoire {match.awayTeam} (%)
             <input type="number" name="awayWinProbability" min={0} max={100} defaultValue={match.stats?.awayWinProbability ?? ""} className={inputClass} />
           </label>
+
+          {match.sport.slug === "football" && (
+            <>
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted sm:col-span-2">
+                Stats avancées football (xG = moyenne par match cette saison)
+              </p>
+              <label className="flex flex-col gap-1 text-sm">
+                xG {match.homeTeam}
+                <input type="number" step="0.01" name="homeAvgXg" defaultValue={match.stats?.homeAvgXg ?? ""} className={inputClass} />
+              </label>
+              <label className="flex flex-col gap-1 text-sm">
+                xG {match.awayTeam}
+                <input type="number" step="0.01" name="awayAvgXg" defaultValue={match.stats?.awayAvgXg ?? ""} className={inputClass} />
+              </label>
+              <label className="flex flex-col gap-1 text-sm">
+                xGA {match.homeTeam}
+                <input type="number" step="0.01" name="homeAvgXga" defaultValue={match.stats?.homeAvgXga ?? ""} className={inputClass} />
+              </label>
+              <label className="flex flex-col gap-1 text-sm">
+                xGA {match.awayTeam}
+                <input type="number" step="0.01" name="awayAvgXga" defaultValue={match.stats?.awayAvgXga ?? ""} className={inputClass} />
+              </label>
+            </>
+          )}
+
+          {match.sport.slug === "basketball" && (
+            <>
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted sm:col-span-2">
+                Stats avancées basketball
+              </p>
+              <label className="flex flex-col gap-1 text-sm">
+                Efficacité offensive {match.homeTeam}
+                <input type="number" step="0.1" name="homeOffRating" defaultValue={match.stats?.homeOffRating ?? ""} className={inputClass} />
+              </label>
+              <label className="flex flex-col gap-1 text-sm">
+                Efficacité offensive {match.awayTeam}
+                <input type="number" step="0.1" name="awayOffRating" defaultValue={match.stats?.awayOffRating ?? ""} className={inputClass} />
+              </label>
+              <label className="flex flex-col gap-1 text-sm">
+                Efficacité défensive {match.homeTeam}
+                <input type="number" step="0.1" name="homeDefRating" defaultValue={match.stats?.homeDefRating ?? ""} className={inputClass} />
+              </label>
+              <label className="flex flex-col gap-1 text-sm">
+                Efficacité défensive {match.awayTeam}
+                <input type="number" step="0.1" name="awayDefRating" defaultValue={match.stats?.awayDefRating ?? ""} className={inputClass} />
+              </label>
+              <label className="flex flex-col gap-1 text-sm">
+                Rythme (pace) {match.homeTeam}
+                <input type="number" step="0.1" name="homePace" defaultValue={match.stats?.homePace ?? ""} className={inputClass} />
+              </label>
+              <label className="flex flex-col gap-1 text-sm">
+                Rythme (pace) {match.awayTeam}
+                <input type="number" step="0.1" name="awayPace" defaultValue={match.stats?.awayPace ?? ""} className={inputClass} />
+              </label>
+            </>
+          )}
+
+          {match.sport.slug === "tennis" && (
+            <>
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted sm:col-span-2">
+                Stats avancées tennis (%)
+              </p>
+              <label className="flex flex-col gap-1 text-sm">
+                % points gagnés au service {match.homeTeam}
+                <input type="number" step="0.1" name="homeServeWinPct" defaultValue={match.stats?.homeServeWinPct ?? ""} className={inputClass} />
+              </label>
+              <label className="flex flex-col gap-1 text-sm">
+                % points gagnés au service {match.awayTeam}
+                <input type="number" step="0.1" name="awayServeWinPct" defaultValue={match.stats?.awayServeWinPct ?? ""} className={inputClass} />
+              </label>
+              <label className="flex flex-col gap-1 text-sm">
+                % points gagnés au retour {match.homeTeam}
+                <input type="number" step="0.1" name="homeReturnWinPct" defaultValue={match.stats?.homeReturnWinPct ?? ""} className={inputClass} />
+              </label>
+              <label className="flex flex-col gap-1 text-sm">
+                % points gagnés au retour {match.awayTeam}
+                <input type="number" step="0.1" name="awayReturnWinPct" defaultValue={match.stats?.awayReturnWinPct ?? ""} className={inputClass} />
+              </label>
+            </>
+          )}
 
           <div className="sm:col-span-2">
             <button type="submit" className="btn-primary">

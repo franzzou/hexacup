@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { requireAdmin } from "@/lib/admin";
+import { computeConfidenceScore } from "@/lib/confidence";
 import { prisma } from "@/lib/prisma";
 
 function str(formData: FormData, key: string) {
@@ -93,6 +94,20 @@ export async function upsertMatchStats(formData: FormData) {
     homeWinProbability: optFloat(formData, "homeWinProbability"),
     drawProbability: optFloat(formData, "drawProbability"),
     awayWinProbability: optFloat(formData, "awayWinProbability"),
+    homeAvgXg: optFloat(formData, "homeAvgXg"),
+    homeAvgXga: optFloat(formData, "homeAvgXga"),
+    awayAvgXg: optFloat(formData, "awayAvgXg"),
+    awayAvgXga: optFloat(formData, "awayAvgXga"),
+    homeOffRating: optFloat(formData, "homeOffRating"),
+    homeDefRating: optFloat(formData, "homeDefRating"),
+    awayOffRating: optFloat(formData, "awayOffRating"),
+    awayDefRating: optFloat(formData, "awayDefRating"),
+    homePace: optFloat(formData, "homePace"),
+    awayPace: optFloat(formData, "awayPace"),
+    homeServeWinPct: optFloat(formData, "homeServeWinPct"),
+    awayServeWinPct: optFloat(formData, "awayServeWinPct"),
+    homeReturnWinPct: optFloat(formData, "homeReturnWinPct"),
+    awayReturnWinPct: optFloat(formData, "awayReturnWinPct"),
   };
 
   await prisma.matchStats.upsert({
@@ -172,22 +187,101 @@ export async function removeLineupPlayer(formData: FormData) {
   revalidatePath(`/matchs/${matchId}`);
 }
 
+function recommendationScoresFromForm(formData: FormData) {
+  const formScore = optInt(formData, "formScore");
+  const h2hScore = optInt(formData, "h2hScore");
+  const contextScore = optInt(formData, "contextScore");
+  const statsScore = optInt(formData, "statsScore");
+  const marketScore = optInt(formData, "marketScore");
+
+  return {
+    formScore,
+    h2hScore,
+    contextScore,
+    statsScore,
+    marketScore,
+    confidenceScore: computeConfidenceScore({
+      formScore,
+      h2hScore,
+      contextScore,
+      statsScore,
+      marketScore,
+    }),
+  };
+}
+
 export async function createRecommendation(formData: FormData) {
   const session = await requireAdmin();
 
   const matchId = str(formData, "matchId");
   const title = str(formData, "title");
+  const market = str(formData, "market") as
+    | "MATCH_WINNER"
+    | "OVER_UNDER"
+    | "BOTH_TEAMS_SCORE"
+    | "HANDICAP"
+    | "SETS_GAMES"
+    | "CORNERS_CARDS"
+    | "OTHER";
   const analysis = str(formData, "analysis");
-  const confidence = optInt(formData, "confidence");
+  const odds = optFloat(formData, "odds");
+  const watchOnly = formData.get("watchOnly") === "on";
 
   if (!title || !analysis || !session?.user?.id) return;
 
   await prisma.recommendation.create({
-    data: { matchId, title, analysis, confidence, createdBy: session.user.id },
+    data: {
+      matchId,
+      title,
+      market,
+      analysis,
+      odds,
+      watchOnly,
+      createdBy: session.user.id,
+      ...recommendationScoresFromForm(formData),
+    },
   });
 
   revalidatePath(`/admin/matchs/${matchId}`);
   revalidatePath(`/matchs/${matchId}`);
+  revalidatePath("/performances");
+}
+
+export async function updateRecommendationDetails(formData: FormData) {
+  await requireAdmin();
+
+  const matchId = str(formData, "matchId");
+  const recommendationId = str(formData, "recommendationId");
+  const title = str(formData, "title");
+  const market = str(formData, "market") as
+    | "MATCH_WINNER"
+    | "OVER_UNDER"
+    | "BOTH_TEAMS_SCORE"
+    | "HANDICAP"
+    | "SETS_GAMES"
+    | "CORNERS_CARDS"
+    | "OTHER";
+  const analysis = str(formData, "analysis");
+  const odds = optFloat(formData, "odds");
+  const watchOnly = formData.get("watchOnly") === "on";
+
+  if (!title || !analysis) return;
+
+  await prisma.recommendation.update({
+    where: { id: recommendationId },
+    data: {
+      title,
+      market,
+      analysis,
+      odds,
+      watchOnly,
+      ...recommendationScoresFromForm(formData),
+    },
+  });
+
+  revalidatePath(`/admin/matchs/${matchId}`);
+  revalidatePath(`/matchs/${matchId}`);
+  revalidatePath("/performances");
 }
 
 export async function updateRecommendationResult(formData: FormData) {
@@ -204,4 +298,5 @@ export async function updateRecommendationResult(formData: FormData) {
 
   revalidatePath(`/admin/matchs/${matchId}`);
   revalidatePath(`/matchs/${matchId}`);
+  revalidatePath("/performances");
 }

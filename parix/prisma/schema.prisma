@@ -164,17 +164,38 @@ model Match {
 }
 
 model MatchStats {
-  id                 String   @id @default(cuid())
-  matchId            String   @unique
+  id                 String  @id @default(cuid())
+  matchId            String  @unique
   homeForm           String? // ex: "WWDLW"
   awayForm           String?
   h2hSummary         String? // résumé face-à-face
-  analysis           String?  @db.Text // analyse générale du match, rédigée par l'admin
+  analysis           String? @db.Text // analyse générale du match, rédigée par l'admin
   homeWinProbability Float? // % de chances de victoire à domicile (0-100)
   drawProbability    Float? // % de chances de match nul (sports concernés uniquement)
   awayWinProbability Float? // % de chances de victoire à l'extérieur (0-100)
-  rawData            Json? // données brutes API pour flexibilité
-  updatedAt          DateTime @updatedAt
+
+  // Stats avancées football (xG/xGA = moyenne par match sur la saison)
+  homeAvgXg  Float?
+  homeAvgXga Float?
+  awayAvgXg  Float?
+  awayAvgXga Float?
+
+  // Stats avancées basketball
+  homeOffRating Float? // efficacité offensive (points marqués / 100 possessions)
+  homeDefRating Float? // efficacité défensive (points concédés / 100 possessions)
+  awayOffRating Float?
+  awayDefRating Float?
+  homePace      Float? // rythme de jeu estimé (possessions/match)
+  awayPace      Float?
+
+  // Stats avancées tennis
+  homeServeWinPct  Float? // % de points gagnés au service
+  awayServeWinPct  Float?
+  homeReturnWinPct Float? // % de points gagnés au retour
+  awayReturnWinPct Float?
+
+  rawData   Json? // données brutes API pour flexibilité
+  updatedAt DateTime @updatedAt
 
   match Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
 }
@@ -232,22 +253,47 @@ enum RecommendationResult {
   VOID
 }
 
+// Marché/type de pari, pour segmenter les recommandations au-delà du
+// simple résultat du match et calculer un taux de réussite par catégorie
+enum BetMarket {
+  MATCH_WINNER // vainqueur du match / 1N2
+  OVER_UNDER // plus/moins de buts ou points
+  BOTH_TEAMS_SCORE // les deux équipes marquent (foot)
+  HANDICAP // écart de points/buts
+  SETS_GAMES // nombre de jeux/sets (tennis)
+  CORNERS_CARDS // corners, cartons (foot)
+  OTHER
+}
+
 model Recommendation {
-  id         String               @id @default(cuid())
-  matchId    String
-  title      String // ex: "Plus de 2.5 buts"
-  analysis   String               @db.Text // texte d'analyse
-  confidence Int? // ex: niveau de confiance 1-5
-  result     RecommendationResult @default(PENDING)
-  createdBy  String // id de l'admin qui l'a créée
-  createdAt  DateTime             @default(now())
-  updatedAt  DateTime             @updatedAt
+  id       String    @id @default(cuid())
+  matchId  String
+  title    String // ex: "Plus de 2.5 buts"
+  market   BetMarket @default(OTHER)
+  analysis String    @db.Text // texte d'analyse (2-3 phrases justifiant le raisonnement)
+
+  // Indice de confiance à facteurs pondérés (0-100 chacun), agrégés en
+  // confidenceScore selon les poids définis dans src/lib/confidence.ts
+  formScore       Int?
+  h2hScore        Int?
+  contextScore    Int?
+  statsScore      Int?
+  marketScore     Int?
+  confidenceScore Float? // score agrégé, calculé et stocké à l'écriture
+
+  odds      Float? // cote au moment de la recommandation, pour le ROI théorique
+  watchOnly Boolean              @default(false) // tendance qui se dessine mais pas encore confirmée
+  result    RecommendationResult @default(PENDING)
+  createdBy String // id de l'admin qui l'a créée
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
 
   match Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
   admin User  @relation(fields: [createdBy], references: [id])
 
   @@index([matchId])
   @@index([result])
+  @@index([market])
 }
 
 // ---------- CONTACT ----------

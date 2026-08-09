@@ -7,6 +7,8 @@ import { userHasSportAccess } from "@/lib/access";
 import { prisma } from "@/lib/prisma";
 import { MatchLineups } from "@/components/match-lineups";
 import { WinProbability } from "@/components/win-probability";
+import { BET_MARKET_LABELS } from "@/lib/bet-markets";
+import { AdvancedStats } from "@/components/advanced-stats";
 
 const RESULT_LABELS: Record<string, string> = {
   PENDING: "En attente",
@@ -111,6 +113,8 @@ export default async function MatchPage(props: PageProps<"/matchs/[id]">) {
             </section>
           )}
 
+          {match.stats && <AdvancedStats sportSlug={match.sport.slug} stats={match.stats} homeTeam={match.homeTeam} awayTeam={match.awayTeam} />}
+
           {match.stats?.analysis && (
             <section className="card flex flex-col gap-2 p-5">
               <h2 className="font-bold">Analyse</h2>
@@ -147,10 +151,17 @@ export default async function MatchPage(props: PageProps<"/matchs/[id]">) {
                     {RESULT_LABELS[rec.result]}
                   </span>
                 </div>
+                <div className="flex flex-wrap items-center gap-2 text-xs">
+                  <span className="badge-neutral">{BET_MARKET_LABELS[rec.market]}</span>
+                  {rec.watchOnly && (
+                    <span className="badge bg-warning/15 text-warning">À surveiller</span>
+                  )}
+                  {rec.odds !== null && <span className="text-muted">Cote : {rec.odds}</span>}
+                </div>
                 <p className="text-sm text-muted">{rec.analysis}</p>
-                {rec.confidence !== null && (
+                {rec.confidenceScore !== null && (
                   <p className="text-xs font-medium text-accent">
-                    Confiance : {rec.confidence}/5
+                    Indice de confiance : {rec.confidenceScore}/100
                   </p>
                 )}
               </article>
