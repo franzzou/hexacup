@@ -28,6 +28,11 @@ export async function SiteHeader() {
               {link.label}
             </Link>
           ))}
+          {session?.user && (
+            <Link href="/mes-pronostics" className="transition-colors hover:text-foreground">
+              Mes pronostics
+            </Link>
+          )}
         </nav>
 
         <div className="flex items-center gap-3 text-sm">

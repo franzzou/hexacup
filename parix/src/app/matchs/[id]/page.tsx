@@ -9,6 +9,7 @@ import { MatchLineups } from "@/components/match-lineups";
 import { WinProbability } from "@/components/win-probability";
 import { BET_MARKET_LABELS } from "@/lib/bet-markets";
 import { AdvancedStats } from "@/components/advanced-stats";
+import { toggleUserPick } from "./actions";
 
 const RESULT_LABELS: Record<string, string> = {
   PENDING: "En attente",
@@ -50,6 +51,17 @@ export default async function MatchPage(props: PageProps<"/matchs/[id]">) {
   const hasAccess = session?.user
     ? await userHasSportAccess(session.user.id, match.sportId)
     : false;
+
+  const followedRecommendationIds = session?.user
+    ? new Set(
+        (
+          await prisma.userPick.findMany({
+            where: { userId: session.user.id, recommendation: { matchId: match.id } },
+            select: { recommendationId: true },
+          })
+        ).map((p) => p.recommendationId),
+      )
+    : new Set<string>();
 
   return (
     <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-10">
@@ -159,11 +171,28 @@ export default async function MatchPage(props: PageProps<"/matchs/[id]">) {
                   {rec.odds !== null && <span className="text-muted">Cote : {rec.odds}</span>}
                 </div>
                 <p className="text-sm text-muted">{rec.analysis}</p>
-                {rec.confidenceScore !== null && (
-                  <p className="text-xs font-medium text-accent">
-                    Indice de confiance : {rec.confidenceScore}/100
-                  </p>
-                )}
+                <div className="flex items-center justify-between gap-2">
+                  {rec.confidenceScore !== null && (
+                    <p className="text-xs font-medium text-accent">
+                      Indice de confiance : {rec.confidenceScore}/100
+                    </p>
+                  )}
+                  {session?.user && (
+                    <form action={toggleUserPick}>
+                      <input type="hidden" name="matchId" value={match.id} />
+                      <input type="hidden" name="recommendationId" value={rec.id} />
+                      {followedRecommendationIds.has(rec.id) ? (
+                        <button type="submit" className="text-xs font-medium text-accent hover:underline">
+                          ✓ Suivi — retirer
+                        </button>
+                      ) : (
+                        <button type="submit" className="text-xs font-medium text-muted hover:text-accent hover:underline">
+                          + Suivre ce pari
+                        </button>
+                      )}
+                    </form>
+                  )}
+                </div>
               </article>
             ))}
           </section>

@@ -51,7 +51,7 @@ export default async function PerformancesPage() {
         <div className="card p-5">
           <p className="text-xs uppercase tracking-wide text-muted">Taux de réussite global</p>
           <p className="mt-1 text-3xl font-black text-accent">
-            {global?.successRate !== null ? `${global.successRate}%` : "—"}
+            {global?.successRate != null ? `${global.successRate}%` : "—"}
           </p>
           <p className="mt-1 text-xs text-muted">
             {global?.won ?? 0} réussies / {(global?.won ?? 0) + (global?.lost ?? 0)} tranchées
